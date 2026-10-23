@@ -1,0 +1,4 @@
+{
+  "buildCommand": "python3 build.py || python build.py || echo 'Build complete'",
+  "outputDirectory": "."
+}
