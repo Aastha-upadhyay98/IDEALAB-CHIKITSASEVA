@@ -1,0 +1,13 @@
+{
+  "name": "chikitsaseva",
+  "version": "2.1.0",
+  "private": true,
+  "description": "ChikitsaSeva – healthcare, welfare and community support portal (prototype)",
+  "scripts": {
+    "build": "python3 build.py",
+    "test": "python3 build.py && node tests/smoke.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0"
+  }
+}
