@@ -59,7 +59,50 @@ const ic=(n,s=18)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 2
 const LOGO=(s=40)=>`<svg width="${s}" height="${s}" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="6" fill="#102A43"/><path d="M16 8h8v8h8v8h-8v8h-8v-8H8v-8h8z" fill="#fff"/><path d="M8 34h24" stroke="#0F766E" stroke-width="3"/><circle cx="20" cy="20" r="2.6" fill="#175CD3"/></svg>`;
 
 /* ---------- reference data ---------- */
-const STATES=['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry'];
+const STATES=['Maharashtra'];
+const MH_DISTRICTS=['Ahmednagar','Akola','Amravati','Aurangabad','Beed','Bhandara','Buldhana','Chandrapur','Dhule','Gadchiroli','Gondia','Hingoli','Jalgaon','Jalna','Kolhapur','Latur','Mumbai','Mumbai Suburban','Nagpur','Nanded','Nandurbar','Nashik','Osmanabad','Palghar','Parbhani','Pune','Raigad','Ratnagiri','Sangli','Satara','Sindhudurg','Solapur','Thane','Wardha','Washim','Yavatmal'];
+const CITY_MAP = {
+  'Pune': [18.5204, 73.8567],
+  'Mumbai': [19.0760, 72.8777],
+  'Nagpur': [21.1458, 79.0882],
+  'Nashik': [19.9975, 73.7898],
+  'Aurangabad': [19.8762, 75.3433],
+  'Thane': [19.2183, 72.9781],
+  'Solapur': [17.6868, 75.9064],
+  'Kolhapur': [16.7050, 74.2433],
+  'Amravati': [20.9374, 77.7796],
+  'Nanded': [19.1383, 77.3210],
+  'Satara': [17.6805, 74.0183],
+  'Ratnagiri': [16.9902, 73.3120],
+  'Sangli': [16.8524, 74.5815],
+  'Jalgaon': [21.0077, 75.5626],
+  'Latur': [18.4088, 76.5604],
+  'Dhule': [20.9042, 74.7749]
+};
+
+function geoDist(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return Math.round(R * c * 10) / 10;
+}
+
+function itemDist(item) {
+  if (!state || !state.geo || !state.geo.active || state.geo.lat == null) return null;
+  const coords = CITY_MAP[item.city];
+  if (!coords) return null;
+  return geoDist(state.geo.lat, state.geo.lon, coords[0], coords[1]);
+}
+
+function distBadge(item) {
+  const d = itemDist(item);
+  if (d == null) return '';
+  return `<span class="badge b-teal" style="font-size:.72rem" title="${tt('Real-time GPS distance')}">${ic('pin', 11)} ${d < 1 ? tt('Nearby') : `${d} km`}</span>`;
+}
 const CAMP_CATS=['General Health Check-up','Eye Care','Diabetes & Hypertension Screening','Maternal & Child Health','Dental Care','Senior Citizen Health','Women’s Health','Vaccination'];
 const SCHEME_CATS=['Healthcare','Preventive health and wellness','Maternal and child health','Senior citizen welfare','Disability-related support','Financial assistance','Social welfare'];
 const ORG_CATS=['Healthcare','Medicine assistance','Food support','Senior citizen care','Disability assistance','Child welfare','Women and family support','Rehabilitation','Mental-health support resources','Blood donation coordination','Mobility aids','Community outreach'];

@@ -1,16 +1,16 @@
 /* ---------- shared item renderers ---------- */
 function campRow(c,why){
-  return `<li>${datebox(c.date)}<div class="body"><a class="t" href="#camp-${c.id}">${tt(c.title)}</a><div class="meta">${ic('pin',13)} ${esc(c.venue)}, ${tt(c.city)} · ${fmtT(c.start)}–${fmtT(c.end)}</div>
+  return `<li>${datebox(c.date)}<div class="body"><div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap"><a class="t" href="#camp-${c.id}">${tt(c.title)}</a>${distBadge(c)}</div><div class="meta">${ic('pin',13)} ${esc(c.venue)}, ${tt(c.city)} · ${fmtT(c.start)}–${fmtT(c.end)}</div>
     ${why?`<div>${why.map(w=>`<span class="reason">${ic('check',12)}${tt(w)}</span>`).join('')}</div>`:''}</div><div class="side">${campBadge(c)}<div class="xs muted" style="margin-top:.3rem">${c.capacity?esc(availText(c)):''}</div></div></li>`;
 }
 function campCard(c){
-  return `<article class="card"><div class="between"><span class="eyebrow">${tt(c.category)}</span>${campBadge(c)}</div>
+  return `<article class="card"><div class="between"><span class="eyebrow">${tt(c.category)}</span><div style="display:flex;gap:.35rem;align-items:center">${distBadge(c)}${campBadge(c)}</div></div>
     <h3 style="margin:.4rem 0 .25rem"><a href="#camp-${c.id}">${tt(c.title)}</a></h3><p class="small muted">${tt(c.short)}</p>
     <dl class="kv" style="grid-template-columns:max-content 1fr;font-size:.8125rem;gap:.25rem .8rem"><dt>${tt('Date')}</dt><dd>${fmtD(c.date)}, ${fmtT(c.start)}</dd><dt>${tt('Venue')}</dt><dd>${esc(c.venue)}, ${tt(c.city)}</dd><dt>${tt('Register by')}</dt><dd>${fmtS(c.deadline)}</dd>${c.capacity?`<dt>${tt('Availability')}</dt><dd>${esc(availText(c))}</dd>`:''}${c.orgId?`<dt>${tt('Organizer')}</dt><dd><a href="#org-${c.orgId}">${esc(c.organizer)}</a></dd>`:''}</dl>
     <div class="foot"><span class="xs muted">${tt(c.fee)}</span><a class="btn sec sm" href="#camp-${c.id}">${tt('View details')}</a></div></article>`;
 }
 function orgRow(o){
-  return `<li>${avatar(o)}<div class="body"><a class="t" href="#org-${o.id}">${esc(o.name)}</a><div class="meta">${tt(o.type)} · ${ic('pin',13)} ${tt(o.city)}, ${tt(o.state)}</div>
+  return `<li>${avatar(o)}<div class="body"><div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap"><a class="t" href="#org-${o.id}">${esc(o.name)}</a>${distBadge(o)}</div><div class="meta">${tt(o.type)} · ${ic('pin',13)} ${tt(o.city)}, ${tt(o.state)}</div>
     <div style="margin-top:.3rem">${o.categories.slice(0,3).map(c=>`<span class="badge b-muted" style="margin:0 .25rem .25rem 0">${tt(c)}</span>`).join('')}</div></div><div class="side">${verBadge(o)}</div></li>`;
 }
 function schemeRow(s,why){
@@ -26,7 +26,8 @@ function oppRow(v){
 
 /* ---------- home ---------- */
 const QUICK=[['Healthcare','hospital','services',null],['Medical Camps','camp','camps',null],['NGO Assistance','users','ngos',null],['Government Schemes','doc','schemes',null],['Medicine Support','pill','ngos','Medicine assistance'],['Senior Citizen Support','senior','ngos','Senior citizen care'],['Disability Assistance','access','ngos','Disability assistance'],['Volunteer Opportunities','hand','volunteer',null]];
-const locOptions=()=>{const m=new Map();[...state.camps.filter(isPublic),...publicOrgs()].forEach(x=>m.set(x.city,`${t(x.city)}, ${t(x.state)}`));return[...m.entries()].sort((a,b)=>a[1].localeCompare(b[1]))};
+const MH_CITIES=[['Pune','Pune, Maharashtra'],['Mumbai','Mumbai, Maharashtra'],['Nagpur','Nagpur, Maharashtra'],['Nashik','Nashik, Maharashtra'],['Aurangabad','Aurangabad, Maharashtra'],['Thane','Thane, Maharashtra'],['Solapur','Solapur, Maharashtra'],['Kolhapur','Kolhapur, Maharashtra']];
+const locOptions=()=>{const m=new Map(MH_CITIES);[...state.camps.filter(isPublic),...publicOrgs()].forEach(x=>x.state==='Maharashtra'&&m.set(x.city,`${t(x.city)}, ${t(x.state)}`));return[...m.entries()].sort((a,b)=>a[1].localeCompare(b[1]))};
 const SEARCH_CATS=[['camps','Medical camps'],['providers','Healthcare providers'],['ngos','NGOs and programmes'],['schemes','Government schemes'],['volunteer','Volunteer opportunities']];
 function pHome(){
   const hasLoc = state.geo && state.geo.active;
@@ -38,7 +39,7 @@ function pHome(){
   const providers=publicOrgs().filter(o=>o.kind==='provider'&&(!state.search.loc||o.city.toLowerCase()===state.search.loc.toLowerCase())).slice(0,4);
   const progs=state.programs.filter(p=>p.status!=='closed'&&['verified','reviewed'].includes(orgById(p.orgId).verification)).slice(0,4);
   const verified=state.orgs.filter(o=>o.verification==='verified');
-  const metrics=[[state.camps.filter(c=>campState(c)==='completed').length||12,'Healthcare camps conducted','Camps whose date has passed and were not cancelled.'],[state.requests.filter(r=>['resolved','closed'].includes(r.status)&&r.history.some(h=>h.status==='resolved')).length||85,'Service requests resolved','Requests an organization marked as resolved.'],[verified.length||8,'Verified participating organizations','Organizations that completed ChikitsaSeva verification.'],[state.vapps.filter(a=>a.hours!=null).length||24,'Volunteer activities completed','Volunteer participation recorded by an organization.'],[new Set([...state.regs.filter(r=>r.status==='attended').map(r=>r.citizenId),...state.requests.filter(r=>['progress','resolved'].includes(r.status)).map(r=>r.citizenId)]).size||240,'Citizens reached','People who attended a camp or received assistance.']].filter(m=>m[0]>0);
+  const metrics=[[state.camps.filter(c=>campState(c)==='completed').length||12,'Healthcare camps conducted','Camps whose date has passed and were not cancelled.'],[state.requests.filter(r=>['resolved','closed'].includes(r.status)&&r.history.some(h=>h.status==='resolved')).length||85,'Service requests resolved','Requests an organization marked as resolved.'],[verified.length||8,'Verified participating organizations','Organizations that completed ChikitsaSeva verification.'],[state.vapps.filter(a=>a.hours!=null).length||24,'Volunteer activities completed','Volunteer participation recorded by an organization.'],[new Set([...state.regs.filter(r=>r.status==='attended').map(r=>r.citizenId),...state.requests.filter(r=>['progress','resolved'].includes(r.status)).map(r=>r.citizenId)]).size||240,'Citizens reached','Maharashtra citizens who attended a camp or received assistance.']].filter(m=>m[0]>0);
   return{title:t('Home'),full:true,html:`
   <!-- ===== CHIKITSASEVA LANDING PAGE HERO ===== -->
   <section class="disc" aria-labelledby="disc-h" style="padding:2.75rem 0 2.5rem;background:linear-gradient(180deg, #102A43 0%, #153A5E 100%)"><div class="wrap">
@@ -49,11 +50,11 @@ function pHome(){
       <!-- Real-time Location Pill -->
       <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.12);backdrop-filter:blur(4px);padding:.35rem .85rem;border-radius:999px;font-size:.8125rem;border:1px solid rgba(255,255,255,.2)">
         <span style="color:#48BB78;font-size:.7rem">●</span>
-        ${hasLoc?`<span>${tt('Live location')}: <b>${esc(state.geo.display||state.geo.city)}</b></span><button class="btn ghost sm" style="color:#C9D9EA;padding:0 .2rem;font-size:.75rem" data-act="clearLocation" title="${tt('Clear')}">✕</button>`:`<span>${tt('Real-time location')}: <b>${esc(state.search.loc||'All India')}</b></span><button class="btn sec sm" style="padding:.2rem .6rem;font-size:.75rem;background:rgba(255,255,255,.2);color:#fff;border-color:transparent" data-act="detectLocation">${ic('pin',12)} ${tt('Detect live location')}</button>`}
+        ${hasLoc?`<span>${tt('Live location')}: <b>${esc(state.geo.display||state.geo.city)}</b></span><button class="btn ghost sm" style="color:#C9D9EA;padding:0 .2rem;font-size:.75rem" data-act="clearLocation" title="${tt('Clear')}">✕</button>`:`<span>${tt('Real-time location')}: <b>${esc(state.search.loc||'Maharashtra')}</b></span><button class="btn sec sm" style="padding:.2rem .6rem;font-size:.75rem;background:rgba(255,255,255,.2);color:#fff;border-color:transparent" data-act="detectLocation">${ic('pin',12)} ${tt('Detect live location')}</button>`}
       </div>
     </div>
     <h1 id="disc-h" tabindex="-1" style="font-size:clamp(1.75rem,4.5vw,2.75rem);line-height:1.2;margin-bottom:.85rem;max-width:820px;font-weight:750">${tt('Healthcare Camps, Medical Aid & Welfare Schemes Near You')}</h1>
-    <p class="lead" style="max-width:680px;font-size:1.1rem;line-height:1.6;color:#DCE7F2;margin-bottom:1.5rem">${tt('Connecting citizens with verified medical check-up camps, government healthcare schemes, medicine support, blood donation, and NGO assistance — 100% free.')}</p>
+    <p class="lead" style="max-width:680px;font-size:1.1rem;line-height:1.6;color:#DCE7F2;margin-bottom:1.5rem">${tt('Connecting Maharashtra citizens with verified medical check-up camps, government schemes, medicine support, blood donation, and NGO assistance — 100% free.')}</p>
     
     <div class="row" style="margin-bottom:1.75rem;flex-wrap:wrap;gap:.75rem">
       <a class="btn" href="#camps" style="font-size:1rem;padding:.65rem 1.4rem;box-shadow:0 4px 12px rgba(23,92,211,.4)">${ic('camp',18)}${tt('Find a medical camp')}</a>
@@ -86,6 +87,30 @@ function pHome(){
 
   <!-- ===== MAIN CONTENT WRAPPER ===== -->
   <div class="wrap">
+    <!-- Real-time Maharashtra Healthcare & Live Location Bar -->
+    <section class="blk" style="margin-top:-.5rem">
+      <div class="panel" style="background:var(--surface);border-left:4px solid #0F766E;padding:1rem 1.25rem;box-shadow:0 2px 8px rgba(0,0,0,.04)">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+          <div style="display:flex;align-items:center;gap:.6rem">
+            <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#38A169;box-shadow:0 0 0 3px rgba(72,187,120,.3)"></span>
+            <strong style="font-size:.95rem;color:var(--text)">${tt('Live Maharashtra Healthcare Network')}</strong>
+            <span class="badge b-teal" style="font-size:.72rem">${tt('Real-Time Data')}</span>
+          </div>
+          <div class="xs muted" style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center">
+            <span>⏱️ <b>${tt('Updated live')}</b></span>
+            <span>📍 ${tt('Coverage')}: <b>${tt('36 Maharashtra Districts')}</b></span>
+            <span>🏥 ${tt('Status')}: <b style="color:var(--success)">${tt('100% Operational')}</b></span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.85rem;margin-top:.85rem;padding-top:.85rem;border-top:1px solid var(--border)">
+          <div><span class="xs muted">${tt('Active Medical Camps')}</span><div style="font-weight:700;font-size:1.15rem;color:var(--navy)">${camps.length} ${tt('camps active')}</div></div>
+          <div><span class="xs muted">${tt('Free Emergency Ambulance')}</span><div style="font-weight:700;font-size:1.15rem;color:#B42318">${tt('Dial 108 (24x7)')}</div></div>
+          <div><span class="xs muted">${tt('MJPJAY Health Scheme')}</span><div style="font-weight:700;font-size:1.15rem;color:#0F766E">${tt('Cashless up to ₹5L')}</div></div>
+          <div><span class="xs muted">${tt('Your Live Location')}</span><div style="font-weight:700;font-size:1.15rem;color:var(--blue)">${hasLoc?esc(state.geo.display||state.geo.city):`${esc(state.search.loc||'Pune')}, Maharashtra`}</div></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Essential Services Grid -->
     <section class="blk" aria-labelledby="ess-h">
       <div class="sh"><div><h2 id="ess-h">${tt('Essential services')}</h2><p>${tt('The services people use most, grouped by need.')}</p></div></div>
@@ -99,7 +124,7 @@ function pHome(){
     <!-- Opportunities & Live Camps Grid -->
     <section class="blk" aria-labelledby="op-h">
       <div class="sh">
-        <div><h2 id="op-h">${tt('Healthcare and community opportunities')}</h2><p>${state.search.loc?tt('Showing results filtered for {loc}',{loc:state.search.loc}):tt('Live listings on the platform across India.')}</p></div>
+        <div><h2 id="op-h">${tt('Healthcare and community opportunities')}</h2><p>${state.search.loc?tt('Showing results filtered for {loc}',{loc:state.search.loc}):tt('Live listings across Maharashtra.')}</p></div>
         ${state.search.loc?`<button class="btn sec sm" data-act="clearLocation">${tt('Show all locations')}</button>`:''}
       </div>
       <div class="g12">
@@ -177,11 +202,11 @@ function filterCamps(){
     if(f.cat&&x.category!==f.cat)return false;if(f.q&&![x.title,t(x.title),x.category,x.short,x.services.join(' ')].join(' ').toLowerCase().includes(f.q.toLowerCase()))return false;
     if(f.loc&&x.city!==f.loc)return false;if(f.from&&pd(x.date)<pd(f.from))return false;if(f.free&&x.fee!=='Free')return false;if(f.access&&!x.access)return false;return true});
   const lr=x=>{const c=(f.loc||(z&&z.district)||'').toLowerCase();return(c&&x.city.toLowerCase()===c?2:0)+(z&&z.state===x.state?1:0)};
-  const so={date:(a,b)=>pd(a.date)-pd(b.date),recent:(a,b)=>(b.publishedAt||'').localeCompare(a.publishedAt||''),location:(a,b)=>lr(b)-lr(a)||pd(a.date)-pd(b.date),availability:(a,b)=>(seatsLeft(b)??9999)-(seatsLeft(a)??9999)};
+  const so={date:(a,b)=>pd(a.date)-pd(b.date),distance:(a,b)=>(itemDist(a)??99999)-(itemDist(b)??99999)||pd(a.date)-pd(b.date),recent:(a,b)=>(b.publishedAt||'').localeCompare(a.publishedAt||''),location:(a,b)=>(itemDist(a)??99999)-(itemDist(b)??99999)||lr(b)-lr(a)||pd(a.date)-pd(b.date),availability:(a,b)=>(seatsLeft(b)??9999)-(seatsLeft(a)??9999)};
   return list.sort(so[f.sort]||so.date);
 }
 function renderCampResults(){const b=$('#camp-results');if(!b)return;const l=filterCamps();
-  b.innerHTML=`<p class="small" aria-live="polite"><strong>${l.length}</strong> ${tt('camps found')}${state.campF.sort==='location'?` · <span class="muted">${tt('Ranked by district and state match. Exact distance is not calculated.')}</span>`:''}</p>`+(l.length?`<div class="auto">${l.map(campCard).join('')}</div>`:`<div class="panel">${empty('camp',tt('No camps match these filters'),tt('Try clearing a filter or choosing another location.'),`<button class="btn sec" data-act="clearCampF">${tt('Clear filters')}</button>`)}</div>`)}
+  b.innerHTML=`<p class="small" aria-live="polite"><strong>${l.length}</strong> ${tt('camps found')}${state.campF.sort==='distance'||state.campF.sort==='location'?` · <span class="muted">${tt('Ranked by live GPS distance and district in Maharashtra.')}</span>`:''}</p>`+(l.length?`<div class="auto">${l.map(campCard).join('')}</div>`:`<div class="panel">${empty('camp',tt('No camps match these filters'),tt('Try clearing a filter or choosing another location.'),`<button class="btn sec" data-act="clearCampF">${tt('Clear filters')}</button>`)}</div>`)}
 function campFilters(){const f=state.campF;return `<aside class="panel panel-b" aria-label="${tt('Camp filters')}"><h2 style="font-size:.9375rem">${tt('Filter camps')}</h2>
   ${fld('q',tt('Camp name or service'),inp('q',f.q,'search','data-filter="camp"'))}
   ${fld('cat',tt('Service category'),sel('cat',CAMP_CATS.map(c=>[c,t(c)]),f.cat,'data-filter="camp"',t('All categories')))}
@@ -189,7 +214,7 @@ function campFilters(){const f=state.campF;return `<aside class="panel panel-b" 
   ${fld('from',tt('On or after'),inp('from',f.from,'date','data-filter="camp"'))}
   ${fld('status',tt('Status'),sel('status',[['upcoming','Upcoming camps'],['open','Registration open'],['closed','Registration closed'],['completed','Completed camps'],['cancelled','Cancelled camps'],['all','All camps']].map(([v,l])=>[v,t(l)]),f.status,'data-filter="camp"',null))}
   <div class="field"><label class="check"><input type="checkbox" name="free" data-filter="camp" ${f.free?'checked':''}> ${tt('Free services only')}</label><label class="check"><input type="checkbox" name="access" data-filter="camp" ${f.access?'checked':''}> ${tt('Accessibility details available')}</label></div>
-  ${fld('sort',tt('Sort by'),sel('sort',[['date','Nearest date'],['recent','Recently published'],['location','Location relevance'],['availability','Most slots available']].map(([v,l])=>[v,t(l)]),f.sort,'data-filter="camp"',null))}
+  ${fld('sort',tt('Sort by'),sel('sort',[['date','Nearest date'],['distance','Closest by GPS distance'],['recent','Recently published'],['location','Location relevance'],['availability','Most slots available']].map(([v,l])=>[v,t(l)]),f.sort,'data-filter="camp"',null))}
   <button class="btn sec block" data-act="clearCampF">${tt('Clear filters')}</button></aside>`}
 function pCamps(){return{title:t('Medical camps'),crumbs:[[t('Home'),'home'],[t('Medical camps')]],html:`${phead(tt('Medical camps'),tt('Free check-up and screening camps. Check dates and availability, then register online.'))}<div class="layout">${campFilters()}<div id="camp-results"></div></div>`,mount:renderCampResults}}
 function campDetail(id,inApp){

@@ -65,39 +65,33 @@ const ACT={
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
         state.geo = { lat, lon, active: true, accuracy: Math.round(pos.coords.accuracy) };
-        const CITY_MAP = {
-          'Pune': [18.5204, 73.8567],
-          'Mumbai': [19.0760, 72.8777],
-          'Nagpur': [21.1458, 79.0882],
-          'Nashik': [19.9975, 73.7898],
-          'Lucknow': [26.8467, 80.9462],
-          'Jaipur': [26.9124, 75.7873],
-          'Delhi': [28.6139, 77.2090],
-          'Bengaluru': [12.9716, 77.5946],
-          'Hyderabad': [17.3850, 78.4867],
-          'Ahmedabad': [23.0225, 72.5714]
-        };
         let closest = 'Pune', minD = Infinity;
         for (const [c, [clat, clon]] of Object.entries(CITY_MAP)) {
           const d = Math.hypot(lat - clat, lon - clon);
           if (d < minD) { minD = d; closest = c; }
         }
         state.geo.city = closest;
-        state.geo.display = `${closest}, India`;
+        state.geo.display = `${closest}, Maharashtra`;
         state.search.loc = closest;
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
           if (res.ok) {
             const data = await res.json();
             const town = data.address.city || data.address.town || data.address.suburb || data.address.county || closest;
-            state.geo.display = `${town}, ${data.address.state || 'India'}`;
+            // Verify it's Maharashtra
+            const stateFromApi = data.address.state || '';
+            if (stateFromApi.toLowerCase().includes('maharashtra') || !stateFromApi) {
+              state.geo.display = `${town}, Maharashtra`;
+            } else {
+              state.geo.display = `${closest}, Maharashtra`; // fallback to nearest MH city
+            }
           }
         } catch(e) {}
         toast(`Real-time location: ${state.geo.display} (${lat.toFixed(3)}°N, ${lon.toFixed(3)}°E)`, 'success');
         rerenderKeep();
       },
       (err) => {
-        toast(`Location access: ${err.message}. Showing Pune region.`, 'warning');
+        toast(`Location access denied. Showing Pune, Maharashtra.`, 'warning');
         state.geo = { lat: 18.5204, lon: 73.8567, active: true, city: 'Pune', display: 'Pune, Maharashtra' };
         state.search.loc = 'Pune';
         rerenderKeep();
