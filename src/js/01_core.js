@@ -64,15 +64,17 @@ const MH_DISTRICTS=['Ahmednagar','Akola','Amravati','Aurangabad','Beed','Bhandar
 const CITY_MAP = {
   'Pune': [18.5204, 73.8567],
   'Mumbai': [19.0760, 72.8777],
+  'Mumbai Suburban': [19.1255, 72.8710],
   'Mira Bhayandar': [19.2952, 72.8544],
   'Mira Road': [19.2813, 72.8561],
   'Bhayandar': [19.3039, 72.8522],
+  'Thane': [19.2183, 72.9781],
+  'Navi Mumbai': [19.0330, 73.0297],
   'Nagpur': [21.1458, 79.0882],
   'Nashik': [19.9975, 73.7898],
   'Aurangabad': [19.8762, 75.3433],
-  'Thane': [19.2183, 72.9781],
-  'Solapur': [17.6868, 75.9064],
   'Kolhapur': [16.7050, 74.2433],
+  'Solapur': [17.6868, 75.9064],
   'Amravati': [20.9374, 77.7796],
   'Nanded': [19.1383, 77.3210],
   'Satara': [17.6805, 74.0183],
@@ -80,7 +82,26 @@ const CITY_MAP = {
   'Sangli': [16.8524, 74.5815],
   'Jalgaon': [21.0077, 75.5626],
   'Latur': [18.4088, 76.5604],
-  'Dhule': [20.9042, 74.7749]
+  'Dhule': [20.9042, 74.7749],
+  'Ahmednagar': [19.0952, 74.7496],
+  'Chandrapur': [19.9615, 79.2961],
+  'Raigad': [18.5158, 73.1822],
+  'Palghar': [19.6967, 72.7699],
+  'Beed': [18.9891, 75.7601],
+  'Buldhana': [20.5293, 76.1843],
+  'Yavatmal': [20.3888, 78.1204],
+  'Wardha': [20.7453, 78.6022],
+  'Sindhudurg': [16.1189, 73.7029],
+  'Gondia': [21.4600, 80.1960],
+  'Bhandara': [21.1714, 79.6548],
+  'Gadchiroli': [20.1809, 79.9961],
+  'Jalna': [19.8347, 75.8816],
+  'Osmanabad': [18.1853, 76.0419],
+  'Parbhani': [19.2686, 76.7708],
+  'Hingoli': [19.7180, 77.1485],
+  'Washim': [20.1092, 77.1350],
+  'Akola': [20.7002, 77.0082],
+  'Nandurbar': [21.3700, 74.2400]
 };
 
 function geoDist(lat1, lon1, lat2, lon2) {
@@ -122,7 +143,91 @@ const orgById=id=>state.orgs.find(o=>o.id===id);
 const progById=id=>state.programs.find(p=>p.id===id);
 const oppById=id=>state.opps.find(o=>o.id===id);
 const reqById=id=>state.requests.find(r=>r.id===id);
-const me=()=>state.user&&state.user.type==='citizen'?state.citizens.find(c=>c.id===state.user.id):null;
+function ensureCitizenData(z){
+  if(!z||z._seeded)return z;
+  z._seeded=true;
+  if(!z.district)z.district='Mira Bhayandar';
+  if(!z.city)z.city=z.district;
+  if(!z.state)z.state='Maharashtra';
+  if(!z.pin)z.pin='401107';
+  if(!z.age)z.age=32;
+  if(!z.interests||!z.interests.length)z.interests=['General Health Check-up','Eye Care','Diabetes & Hypertension Screening'];
+  if(!z.supportInterests||!z.supportInterests.length)z.supportInterests=['Medicine assistance','Senior citizen care','Mobility aids'];
+  if(!z.members||!z.members.length){
+    z.members=[
+      {id:'m1_'+z.id,name:'Sunanda '+(z.name.split(' ')[1]||'Patil'),relation:'Mother',age:64,access:'consented',consentOn:off(-30)},
+      {id:'m2_'+z.id,name:'Aarav '+(z.name.split(' ')[1]||'Patil'),relation:'Son',age:8,access:'guardian',consentOn:off(-30)},
+      {id:'m3_'+z.id,name:'Rajesh '+(z.name.split(' ')[1]||'Patil'),relation:'Father',age:68,access:'consented',consentOn:off(-20)}
+    ];
+  }
+  if(!z.saved||!z.saved.length){
+    z.saved=['camp:c113','camp:c101','org:o11','org:o1','scheme:mjpjay','scheme:pmjay'];
+  }
+  if(!z.volunteer){
+    z.volunteer={skills:['Basic computer use','Marathi','Hindi'],availability:'Weekends',area:z.district};
+  }
+
+  // Ensure registrations exist across upcoming, completed, and cancelled
+  const hasMyReg=id=>state.regs.some(r=>r.citizenId===z.id&&r.campId===id);
+  if(!hasMyReg('c113')){
+    state.regs.push({ref:mkRef(state),campId:'c113',citizenId:z.id,status:'confirmed',createdAt:off(-4),updatedAt:off(-4)});
+  }
+  if(!hasMyReg('c101')){
+    state.regs.push({ref:mkRef(state),campId:'c101',citizenId:z.id,status:'confirmed',createdAt:off(-6),updatedAt:off(-6)});
+  }
+  if(!hasMyReg('c107')){
+    state.regs.push({ref:mkRef(state),campId:'c107',citizenId:z.id,status:'attended',createdAt:off(-18),updatedAt:off(-10)});
+  }
+  if(!hasMyReg('c106')){
+    state.regs.push({ref:mkRef(state),campId:'c106',citizenId:z.id,status:'attended',createdAt:off(-12),updatedAt:off(-5)});
+  }
+  if(!hasMyReg('c102')){
+    state.regs.push({ref:mkRef(state),campId:'c102',citizenId:z.id,status:'cancelled',createdAt:off(-15),updatedAt:off(-14)});
+  }
+
+  // Ensure requests exist across categories and statuses
+  if(!state.requests.some(r=>r.citizenId===z.id)){
+    const hist=arr=>arr.map(([d,status,note,by])=>({at:off(d),status,note,by}));
+    state.requests.push(
+      {id:'SR-'+(2100+Math.floor(Math.random()*800)),citizenId:z.id,memberId:z.members[0].id,category:'Medicine assistance',title:'Monthly BP & Diabetes tablets for mother',desc:'Need monthly ongoing prescription medicine support for senior mother living in Mira Bhayandar.',contactPref:'Phone call',share:['name','contact','district','age','household'],orgId:'o11',status:'progress',createdAt:off(-14),history:hist([[-14,'review','Request submitted.','You'],[-13,'referred','Sent to Mira Bhayandar Arogya Kendra.','ChikitsaSeva'],[-10,'accepted','Medicines approved for current cycle.','Mira Bhayandar Arogya Kendra'],[-5,'progress','First pack delivered at clinic.','Mira Bhayandar Arogya Kendra']])},
+      {id:'SR-'+(2200+Math.floor(Math.random()*800)),citizenId:z.id,memberId:z.members[2].id,category:'Mobility aids',title:'Lightweight walking frame for father',desc:'Orthopedic walker recommended for mobility support after hip therapy.',contactPref:'SMS',share:['name','contact','district','household'],orgId:'o1',status:'info',createdAt:off(-5),infoQ:'Please confirm prescription date and height for walker sizing.',history:hist([[-5,'review','Request submitted.','You'],[-4,'referred','Sent to Sahyog Health Foundation.','ChikitsaSeva'],[-2,'info','Please confirm prescription date and height for walker sizing.','Sahyog Health Foundation']])},
+      {id:'SR-'+(2300+Math.floor(Math.random()*800)),citizenId:z.id,memberId:null,category:'Food support',title:'Community dry ration kit assistance',desc:'Temporary grocery assistance for family during recovery.',contactPref:'Phone call',share:['name','contact','district'],orgId:'o2',status:'resolved',createdAt:off(-30),history:hist([[-30,'review','Request submitted.','You'],[-28,'referred','Sent to Annapurna Community Kitchen Trust.','ChikitsaSeva'],[-25,'accepted','Kit ready for pickup.','Annapurna Community Kitchen Trust'],[-22,'resolved','Ration kit collected.','Annapurna Community Kitchen Trust']])},
+      {id:'SR-'+(2400+Math.floor(Math.random()*800)),citizenId:z.id,memberId:null,category:'Senior citizen care',title:'Home wellness visit for senior parents',desc:'Requesting bi-weekly nurse check-up for blood pressure and medication adherence.',contactPref:'Phone call',share:['name','contact','district'],orgId:'o11',status:'review',createdAt:off(-1),history:hist([[-1,'review','Request submitted.','You']])}
+    );
+  }
+
+  // Ensure appointments exist
+  if(!state.appts.some(a=>a.citizenId===z.id)){
+    state.appts.push(
+      {id:'AP-'+(3100+Math.floor(Math.random()*800)),citizenId:z.id,orgId:'o11',type:'appointment',date:off(3),slot:'Morning',confirmedTime:'10:30 AM',reason:'Cardiac and general health consultation at clinic.',status:'confirmed',createdAt:off(-2)},
+      {id:'AP-'+(3200+Math.floor(Math.random()*800)),citizenId:z.id,orgId:'o1',type:'callback',date:off(2),slot:'Afternoon',reason:'Query regarding free medicine assistance renewal.',status:'requested',createdAt:off(-1)}
+    );
+  }
+
+  // Ensure volunteer applications exist
+  if(!state.vapps.some(v=>v.citizenId===z.id)){
+    state.vapps.push(
+      {id:'VA-'+(4100+Math.floor(Math.random()*800)),oppId:'v1',citizenId:z.id,status:'accepted',hours:8,createdAt:off(-8)},
+      {id:'VA-'+(4200+Math.floor(Math.random()*800)),oppId:'v4',citizenId:z.id,status:'applied',hours:null,createdAt:off(-1)}
+    );
+  }
+
+  // Ensure notifications exist
+  if(!state.notices.some(n=>n.citizenId===z.id)){
+    notify(z.id,'Your registration for the {camp} is confirmed. Reference {ref}.',{camp:'Comprehensive Health & Cardiac Screening Camp',ref:'CS-MH-7721'});
+    notify(z.id,'Your attendance at the {camp} was recorded.',{camp:'General Health Check-up Camp'});
+    notify(z.id,'Update on request {id}: {status}.',{id:'SR-2104',status:'In progress'});
+    notify(z.id,'{org} needs more information for request {id}.',{org:'Sahyog Health Foundation',id:'SR-2201'});
+  }
+
+  return z;
+}
+
+const me=()=>{
+  if(!state||!state.user||state.user.type!=='citizen')return null;
+  const c=state.citizens.find(x=>x.id===state.user.id);
+  return c?ensureCitizenData(c):null;
+};
 const myOrg=()=>state.user&&state.user.type==='org'?orgById(state.user.orgId):null;
 const citizenById=id=>state.citizens.find(c=>c.id===id);
 function log(actor,action,detail){state.audit.unshift({at:stamp(),actor,action,detail})}

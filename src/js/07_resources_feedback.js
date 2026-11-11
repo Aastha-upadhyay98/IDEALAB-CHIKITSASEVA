@@ -3,7 +3,7 @@ function seedMore(s){
   s.offers=[{id:'EQ-401',citizenId:'s30',item:'Folding wheelchair',category:'Mobility aid',condition:'Good',qty:1,area:'Pune',notes:'Can be collected on weekends.',status:'available',orgId:null,createdAt:off(-4)},
     {id:'EQ-402',citizenId:'s41',item:'Walking frame (walker)',category:'Mobility aid',condition:'New, unused',qty:2,area:'Pune',notes:'',status:'available',orgId:null,createdAt:off(-2)},
     {id:'EQ-403',citizenId:'s7',item:'Digital blood pressure monitor',category:'Monitoring device',condition:'Good',qty:1,area:'Nagpur',notes:'',status:'claimed',orgId:'o3',createdAt:off(-12)}];
-  s.drives=[{id:'BD-1',orgId:'o5',title:'Community blood donation drive',city:'Jaipur',venue:'Community Centre (sample venue)',date:off(15),start:'09:00',end:'15:00',interested:['s4','s9']},
+  s.drives=[{id:'BD-1',orgId:'o11',title:'Community blood donation drive with Red Cross',city:'Mira Bhayandar',venue:'MBMC Community Hall, Mira Road',date:off(15),start:'09:00',end:'15:00',interested:['s4','s9']},
     {id:'BD-2',orgId:'o1',title:'Blood donation drive with a licensed blood bank',city:'Pune',venue:'Ward Community Hall (sample venue)',date:off(18),start:'10:00',end:'16:00',interested:['s0','s5','s10']}];
   s.announcements=[{id:'AN-1',kind:'health',title:'Seasonal fever advisory',body:'Fever cases often rise after the monsoon. Use mosquito nets, remove standing water and see a doctor if fever lasts more than two days.',audience:'All India',published:off(-3),expires:off(30),status:'published'},
     {id:'AN-2',kind:'service',title:'New: offer medical equipment you no longer need',body:'You can now list wheelchairs, walkers and other equipment for verified organizations to collect and pass on.',audience:'All India',published:off(-1),expires:off(45),status:'published'},
@@ -19,8 +19,8 @@ function seedMore(s){
     {id:'AP-2004',citizenId:'u1',orgId:'o1',type:'callback',date:off(1),slot:'Afternoon',reason:'Query about the diabetes awareness session.',status:'requested',createdAt:off(0)}
   );
   s.requests.push(
-    {id:'SR-1008',citizenId:'u1',memberId:'m2',category:'Child welfare',title:'Nutrition kit for my son',desc:'My son Aarav (7) is underweight. Doctor recommended supplemental nutrition.',contactPref:'Phone call',share:['name','contact','district','household'],orgId:'o4',status:'accepted',createdAt:off(-4),
-      history:[{at:off(-4),status:'review',note:'Request submitted.',by:'You'},{at:off(-3),status:'referred',note:'Sent to Asha Kiran Child Welfare Society.',by:'ChikitsaSeva'},{at:off(-2),status:'accepted',note:'Accepted. Nutrition kit ready for collection.',by:'Asha Kiran Child Welfare Society'}]},
+    {id:'SR-1008',citizenId:'u1',memberId:'m2',category:'Child welfare',title:'Nutrition kit for my son',desc:'My son Aarav (7) is underweight. Doctor recommended supplemental nutrition.',contactPref:'Phone call',share:['name','contact','district','household'],orgId:'o11',status:'accepted',createdAt:off(-4),
+      history:[{at:off(-4),status:'review',note:'Request submitted.',by:'You'},{at:off(-3),status:'referred',note:'Sent to Mira Bhayandar Arogya Kendra.',by:'ChikitsaSeva'},{at:off(-2),status:'accepted',note:'Accepted. Nutrition kit ready for collection.',by:'Mira Bhayandar Arogya Kendra'}]},
     {id:'SR-1009',citizenId:'u1',memberId:null,category:'Blood donation information',title:'Need blood donor info for my father',desc:'My father needs B+ blood for surgery scheduled next week in Pune.',contactPref:'Phone call',share:['name','contact','district'],orgId:null,status:'review',createdAt:off(0),
       history:[{at:off(0),status:'review',note:'Request submitted.',by:'You'}]}
   );

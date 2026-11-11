@@ -26,14 +26,23 @@ function oppRow(v){
 
 /* ---------- home ---------- */
 const QUICK=[['Healthcare','hospital','services',null],['Medical Camps','camp','camps',null],['NGO Assistance','users','ngos',null],['Government Schemes','doc','schemes',null],['Medicine Support','pill','ngos','Medicine assistance'],['Senior Citizen Support','senior','ngos','Senior citizen care'],['Disability Assistance','access','ngos','Disability assistance'],['Volunteer Opportunities','hand','volunteer',null]];
-const MH_CITIES=[['Pune','Pune, Maharashtra'],['Mumbai','Mumbai, Maharashtra'],['Mira Bhayandar','Mira Bhayandar, Maharashtra'],['Nagpur','Nagpur, Maharashtra'],['Nashik','Nashik, Maharashtra'],['Aurangabad','Aurangabad, Maharashtra'],['Thane','Thane, Maharashtra'],['Solapur','Solapur, Maharashtra'],['Kolhapur','Kolhapur, Maharashtra']];
-const locOptions=()=>{const m=new Map(MH_CITIES);[...state.camps.filter(isPublic),...publicOrgs()].forEach(x=>x.state==='Maharashtra'&&m.set(x.city,`${t(x.city)}, ${t(x.state)}`));return[...m.entries()].sort((a,b)=>a[1].localeCompare(b[1]))};
+const locOptions=()=>{
+  const m=new Map();
+  MH_DISTRICTS.forEach(d=>m.set(d,`${t(d)}, Maharashtra`));
+  m.set('Mira Bhayandar','Mira Bhayandar, Maharashtra');
+  m.set('Navi Mumbai','Navi Mumbai, Maharashtra');
+  [...state.camps.filter(isPublic),...publicOrgs()].forEach(x=>{
+    if(x.city) m.set(x.city,`${t(x.city)}, ${t(x.state||'Maharashtra')}`);
+  });
+  return[...m.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+};
 const SEARCH_CATS=[['camps','Medical camps'],['providers','Healthcare providers'],['ngos','NGOs and programmes'],['schemes','Government schemes'],['volunteer','Volunteer opportunities']];
 function pHome(){
   const hasLoc = state.geo && state.geo.active;
   let camps=state.camps.filter(c=>['open','soon'].includes(campState(c))).sort((a,b)=>pd(a.date)-pd(b.date));
   if(state.search.loc){
-    const locCamps = camps.filter(c=>c.city.toLowerCase()===state.search.loc.toLowerCase());
+    const qLoc=state.search.loc.toLowerCase();
+    const locCamps = camps.filter(c=>(c.city&&c.city.toLowerCase()===qLoc)||(c.district&&c.district.toLowerCase()===qLoc));
     if(locCamps.length) camps = locCamps;
   }
   const providers=publicOrgs().filter(o=>o.kind==='provider'&&(!state.search.loc||o.city.toLowerCase()===state.search.loc.toLowerCase())).slice(0,4);
@@ -170,13 +179,14 @@ const svcLink=([h,icn,a,b])=>`<a href="#${h}">${ic(icn,20)}<span><b>${tt(a)}</b>
 
 /* ---------- unified search ---------- */
 function searchResults(q,loc,cat){
-  q=(q||'').trim().toLowerCase();const has=s=>!q||s.toLowerCase().includes(q);const inLoc=c=>!loc||c===loc;
+  q=(q||'').trim().toLowerCase();const has=s=>!q||s.toLowerCase().includes(q);
+  const inLoc=x=>!loc||(x.city&&x.city.toLowerCase()===loc.toLowerCase())||(x.district&&x.district.toLowerCase()===loc.toLowerCase());
   const R={};
-  if(!cat||cat==='camps')R.camps=state.camps.filter(c=>isPublic(c)&&c.status!=='cancelled'&&campState(c)!=='completed'&&inLoc(c.city)&&has([c.title,t(c.title),c.category,c.short,c.services.join(' ')].join(' ')));
-  if(!cat||cat==='providers')R.providers=publicOrgs().filter(o=>o.kind==='provider'&&inLoc(o.city)&&has([o.name,o.type,o.about,o.categories.join(' '),o.services.join(' ')].join(' ')));
-  if(!cat||cat==='ngos'){R.ngos=publicOrgs().filter(o=>o.kind==='ngo'&&inLoc(o.city)&&has([o.name,o.about,o.categories.join(' '),o.services.join(' ')].join(' ')));R.progs=state.programs.filter(p=>p.status!=='closed'&&inLoc(p.city)&&has([p.title,t(p.title),p.type,p.desc].join(' ')))}
+  if(!cat||cat==='camps')R.camps=state.camps.filter(c=>isPublic(c)&&c.status!=='cancelled'&&campState(c)!=='completed'&&inLoc(c)&&has([c.title,t(c.title),c.category,c.short,c.services.join(' ')].join(' ')));
+  if(!cat||cat==='providers')R.providers=publicOrgs().filter(o=>o.kind==='provider'&&inLoc(o)&&has([o.name,o.type,o.about,o.categories.join(' '),o.services.join(' ')].join(' ')));
+  if(!cat||cat==='ngos'){R.ngos=publicOrgs().filter(o=>o.kind==='ngo'&&inLoc(o)&&has([o.name,o.about,o.categories.join(' '),o.services.join(' ')].join(' ')));R.progs=state.programs.filter(p=>p.status!=='closed'&&inLoc(p)&&has([p.title,t(p.title),p.type,p.desc].join(' ')))}
   if(!cat||cat==='schemes')R.schemes=state.schemes.filter(s=>s.status==='active'&&has([s.name,s.category,s.desc,s.beneficiaries].join(' ')));
-  if(!cat||cat==='volunteer')R.opps=state.opps.filter(v=>daysUntil(v.deadline)>=0&&inLoc(v.city)&&has([v.title,t(v.title),v.activity,v.resp].join(' ')));
+  if(!cat||cat==='volunteer')R.opps=state.opps.filter(v=>daysUntil(v.deadline)>=0&&inLoc(v)&&has([v.title,t(v.title),v.activity,v.resp].join(' ')));
   return R;
 }
 function resultsHtml(R){
@@ -200,7 +210,7 @@ function filterCamps(){
     if(f.status==='upcoming'&&!['open','soon','closed','full'].includes(st))return false;if(f.status==='open'&&st!=='open')return false;
     if(f.status==='closed'&&!['closed','full'].includes(st))return false;if(f.status==='completed'&&st!=='completed')return false;if(f.status==='cancelled'&&st!=='cancelled')return false;
     if(f.cat&&x.category!==f.cat)return false;if(f.q&&![x.title,t(x.title),x.category,x.short,x.services.join(' ')].join(' ').toLowerCase().includes(f.q.toLowerCase()))return false;
-    if(f.loc&&x.city!==f.loc)return false;if(f.from&&pd(x.date)<pd(f.from))return false;if(f.free&&x.fee!=='Free')return false;if(f.access&&!x.access)return false;return true});
+    if(f.loc&&x.city.toLowerCase()!==f.loc.toLowerCase()&&(!x.district||x.district.toLowerCase()!==f.loc.toLowerCase()))return false;if(f.from&&pd(x.date)<pd(f.from))return false;if(f.free&&x.fee!=='Free')return false;if(f.access&&!x.access)return false;return true});
   const lr=x=>{const c=(f.loc||(z&&z.district)||'').toLowerCase();return(c&&x.city.toLowerCase()===c?2:0)+(z&&z.state===x.state?1:0)};
   const so={date:(a,b)=>pd(a.date)-pd(b.date),distance:(a,b)=>(itemDist(a)??99999)-(itemDist(b)??99999)||pd(a.date)-pd(b.date),recent:(a,b)=>(b.publishedAt||'').localeCompare(a.publishedAt||''),location:(a,b)=>(itemDist(a)??99999)-(itemDist(b)??99999)||lr(b)-lr(a)||pd(a.date)-pd(b.date),availability:(a,b)=>(seatsLeft(b)??9999)-(seatsLeft(a)??9999)};
   return list.sort(so[f.sort]||so.date);
