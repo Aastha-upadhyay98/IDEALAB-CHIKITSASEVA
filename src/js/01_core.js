@@ -60,10 +60,13 @@ const LOGO=(s=40)=>`<svg width="${s}" height="${s}" viewBox="0 0 40 40" aria-hid
 
 /* ---------- reference data ---------- */
 const STATES=['Maharashtra'];
-const MH_DISTRICTS=['Ahmednagar','Akola','Amravati','Aurangabad','Beed','Bhandara','Buldhana','Chandrapur','Dhule','Gadchiroli','Gondia','Hingoli','Jalgaon','Jalna','Kolhapur','Latur','Mumbai','Mumbai Suburban','Nagpur','Nanded','Nandurbar','Nashik','Osmanabad','Palghar','Parbhani','Pune','Raigad','Ratnagiri','Sangli','Satara','Sindhudurg','Solapur','Thane','Wardha','Washim','Yavatmal'];
+const MH_DISTRICTS=['Ahmednagar','Akola','Amravati','Aurangabad','Beed','Bhandara','Buldhana','Chandrapur','Dhule','Gadchiroli','Gondia','Hingoli','Jalgaon','Jalna','Kolhapur','Latur','Mira Bhayandar','Mumbai','Mumbai Suburban','Nagpur','Nanded','Nandurbar','Nashik','Osmanabad','Palghar','Parbhani','Pune','Raigad','Ratnagiri','Sangli','Satara','Sindhudurg','Solapur','Thane','Wardha','Washim','Yavatmal'];
 const CITY_MAP = {
   'Pune': [18.5204, 73.8567],
   'Mumbai': [19.0760, 72.8777],
+  'Mira Bhayandar': [19.2952, 72.8544],
+  'Mira Road': [19.2813, 72.8561],
+  'Bhayandar': [19.3039, 72.8522],
   'Nagpur': [21.1458, 79.0882],
   'Nashik': [19.9975, 73.7898],
   'Aurangabad': [19.8762, 75.3433],

@@ -26,7 +26,7 @@ function oppRow(v){
 
 /* ---------- home ---------- */
 const QUICK=[['Healthcare','hospital','services',null],['Medical Camps','camp','camps',null],['NGO Assistance','users','ngos',null],['Government Schemes','doc','schemes',null],['Medicine Support','pill','ngos','Medicine assistance'],['Senior Citizen Support','senior','ngos','Senior citizen care'],['Disability Assistance','access','ngos','Disability assistance'],['Volunteer Opportunities','hand','volunteer',null]];
-const MH_CITIES=[['Pune','Pune, Maharashtra'],['Mumbai','Mumbai, Maharashtra'],['Nagpur','Nagpur, Maharashtra'],['Nashik','Nashik, Maharashtra'],['Aurangabad','Aurangabad, Maharashtra'],['Thane','Thane, Maharashtra'],['Solapur','Solapur, Maharashtra'],['Kolhapur','Kolhapur, Maharashtra']];
+const MH_CITIES=[['Pune','Pune, Maharashtra'],['Mumbai','Mumbai, Maharashtra'],['Mira Bhayandar','Mira Bhayandar, Maharashtra'],['Nagpur','Nagpur, Maharashtra'],['Nashik','Nashik, Maharashtra'],['Aurangabad','Aurangabad, Maharashtra'],['Thane','Thane, Maharashtra'],['Solapur','Solapur, Maharashtra'],['Kolhapur','Kolhapur, Maharashtra']];
 const locOptions=()=>{const m=new Map(MH_CITIES);[...state.camps.filter(isPublic),...publicOrgs()].forEach(x=>x.state==='Maharashtra'&&m.set(x.city,`${t(x.city)}, ${t(x.state)}`));return[...m.entries()].sort((a,b)=>a[1].localeCompare(b[1]))};
 const SEARCH_CATS=[['camps','Medical camps'],['providers','Healthcare providers'],['ngos','NGOs and programmes'],['schemes','Government schemes'],['volunteer','Volunteer opportunities']];
 function pHome(){
